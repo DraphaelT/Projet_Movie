@@ -12,6 +12,7 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
 
+import DAO.GenreDAO;
 import DTO.ActeurDTO;
 import DTO.FilmDTO;
 import DTO.RealisateurDTO;
@@ -87,16 +88,17 @@ public class Connexionjpa {
 			}
 					
 			//Entre en Base des Genres	
-			TypedQuery<Genre> queryGenre= em.createQuery("select h from Genre h where h.nom=:nomGenre", Genre.class);
+			//TypedQuery<Genre> queryGenre= em.createQuery("select h from Genre h where h.nom=:nomGenre", Genre.class);
 		
 			for(String g : f.getGenres() ) {
 				Genre genres = new Genre();
-				queryGenre.setParameter("nomGenre", g); 
-				if(queryGenre.getResultList().size() == 0) {		
+				//queryGenre.setParameter("nomGenre", g); 
+				
+				if(GenreDAO.existeGenre(g, em)==null) {		
 					genres.setNom(g);
-					em.persist(genres); 
+					GenreDAO.ajoutGenre(genres, em);; 
 				}else {
-					genres = queryGenre.getResultList().get(0);
+					genres = GenreDAO.existeGenre(g, em);
 				}
 				film.getGenres().add(genres);
 			}
@@ -182,7 +184,7 @@ public class Connexionjpa {
 			
 			}
 				
-			
+			//Entre en Base les Roles
 			List<RoleDTO> listeRole = f.getRoles();
 			
 			for(RoleDTO r : listeRole) {
