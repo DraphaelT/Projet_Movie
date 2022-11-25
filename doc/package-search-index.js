@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"DAO"},{"l":"DTO"},{"l":"fr.diginamic"}];updateSearchResults();
