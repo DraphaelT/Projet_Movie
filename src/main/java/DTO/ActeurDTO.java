@@ -1,47 +1,31 @@
-package fr.diginamic;
+package DTO;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class ActeurDTO {
 
-
-
-@Entity
-@Table(name="Acteurs")
-public class Acteurs {
-
-	@Id
+	@JsonProperty("id")
 	private String id;
 	
-	@Column(name = "identite" , nullable = false)
+	@JsonProperty("identite")
 	private String identite;
 	
-	@Column(name = "height")
-	private String height;
+	@JsonProperty("naissance")
+	private NaissanceDTO naissance;
 	
-	@Column(name = "url")
+	@JsonProperty("url")
 	private String url;
 	
-	@OneToMany(mappedBy = "acteur")
-	private List<Role> roles = new ArrayList<Role>();
+	@JsonProperty("height")
+	private String height;
 	
-	@Temporal(value = TemporalType.DATE)
-	@Column(name = "dateNaissance")
-	private Date dateNaissance;
-	
-	@OneToOne
-	private Lieu naissance;
+	@JsonProperty("roles")
+	private ArrayList<String> role = new ArrayList<String>();
+
 
 	/** Getter pour l'attribut id
 	 * @return id renvois id 
@@ -102,44 +86,39 @@ public class Acteurs {
 	/** Getter pour l'attribut roles
 	 * @return roles renvois roles 
 	 */
-	public List<Role> getRoles() {
-		return roles;
+	public ArrayList<String> getRole() {
+		return role;
 	}
 
 	/** Setter pour l'attribut roles
 	 * @param roles the roles sauvegarde la valeur dans roles the roles  
 	 */
-	public void setRoles(List<Role> roles) {
-		this.roles = roles;
-	}
-
-	/** Getter pour l'attribut dateNaissance
-	 * @return dateNaissance renvois dateNaissance 
-	 */
-	public Date getDateNaissance() {
-		return dateNaissance;
-	}
-
-	/** Setter pour l'attribut dateNaissance
-	 * @param dateNaissance the dateNaissance sauvegarde la valeur dans dateNaissance the dateNaissance  
-	 */
-	public void setDateNaissance(Date dateNaissance) {
-		this.dateNaissance = dateNaissance;
+	public void setRoles(ArrayList<String> role) {
+		this.role = role;
 	}
 
 	/** Getter pour l'attribut naissance
 	 * @return naissance renvois naissance 
 	 */
-	public Lieu getNaissance() {
+	public NaissanceDTO getNaissance() {
 		return naissance;
 	}
 
 	/** Setter pour l'attribut naissance
 	 * @param naissance the naissance sauvegarde la valeur dans naissance the naissance  
 	 */
-	public void setNaissance(Lieu naissance) {
+	public void setNaissance(NaissanceDTO naissance) {
 		this.naissance = naissance;
 	}
+
+	@Override
+	public String toString() {
+		return "ActeurDTO [id=" + id + ", identite=" + identite + ", naissance=" + naissance + ", url=" + url
+				+ ", height=" + height + ", role=" + role + "]";
+	}
+
+	
+
 	
 	
 }
