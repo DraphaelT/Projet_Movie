@@ -12,7 +12,13 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
 
+import DAO.ActeurDAO;
+import DAO.FilmDAO;
 import DAO.GenreDAO;
+import DAO.LieuDAO;
+import DAO.PaysDAO;
+import DAO.RealisateurDAO;
+import DAO.RoleDAO;
 import DTO.ActeurDTO;
 import DTO.FilmDTO;
 import DTO.RealisateurDTO;
@@ -43,24 +49,23 @@ public class Connexionjpa {
 			film.setLangue(f.getLangue());		
 			film.setAnneeSortie(f.getDateSortie());
 			
-			em.persist(film);
+			FilmDAO.ajoutFilm(film, em);
 			
 			//Entre en Base des Lieux
 			Lieu lieu = new Lieu();
-			TypedQuery<Lieu> queryLieu = em.createQuery("select l from Lieu l where l.ville=:nomLieu", Lieu.class);
-			if(f.getLieu() != null ) {
-				queryLieu.setParameter("nomLieu", f.getLieu().getNom()); 
-				
+			
+			if(f.getLieu() != null ) {				
 				if(!f.getLieu().getNom().equals(null)) {
-					if(queryLieu.getResultList().size() == 0) {
+					if(LieuDAO.existLieu(f.getLieu().getNom(), em) == null) {
 	
 						lieu.setVille(f.getLieu().getNom());
 						lieu.setEtatDept(f.getLieu().getEtat());
-										
+						
+						LieuDAO.ajoutLieu(lieu, em);
 						em.persist(lieu);
 					
 					}else {
-						lieu = queryLieu.getResultList().get(0);
+						lieu = LieuDAO.existLieu(f.getLieu().getNom(), em);
 					}
 					film.getLieu().add(lieu);
 				}
@@ -68,32 +73,28 @@ public class Connexionjpa {
 			}
 			
 			//Entre en Base des Pays
-			TypedQuery<Pays> queryPays = em.createQuery("select p from Pays p where p.nom=:nomPays", Pays.class);
-			
+					
 			Pays pays = new Pays();
 			
-			if(f.getPays() != null ) {
-				queryPays.setParameter("nomPays", f.getPays().getNom()); 
-				if(queryPays.getResultList().size() == 0) {
+			if(f.getPays() != null ) {		
+				if(PaysDAO.existePays(pays.getNom(), em) == null) {
 					pays.setNom(f.getPays().getNom());
 					pays.setUrl(f.getPays().getUrl());
 					pays.getLieux().add(lieu);
 					pays.getFilmsPays().add(film);
 					film.setPay(pays);
-					em.persist(pays);
+					PaysDAO.ajoutPays(pays, em);
 				}else {
-					pays = queryPays.getResultList().get(0);
+					pays = PaysDAO.existePays(pays.getNom(), em);
 				}
 				film.setPay(pays);
 			}
 					
 			//Entre en Base des Genres	
-			//TypedQuery<Genre> queryGenre= em.createQuery("select h from Genre h where h.nom=:nomGenre", Genre.class);
+
 		
 			for(String g : f.getGenres() ) {
-				Genre genres = new Genre();
-				//queryGenre.setParameter("nomGenre", g); 
-				
+				Genre genres = new Genre();	
 				if(GenreDAO.existeGenre(g, em)==null) {		
 					genres.setNom(g);
 					GenreDAO.ajoutGenre(genres, em);; 
@@ -104,18 +105,17 @@ public class Connexionjpa {
 			}
 			
 			//Entre en Base des Realisateurs
-			TypedQuery<Realisateur> queryReal = em.createQuery("select r from Realisateur r where r.identite=:nomRea", Realisateur.class);
 			Realisateur real = new Realisateur();
 			
 			List<RealisateurDTO> listeReal = f.getRealis();
+			
 			for(RealisateurDTO r : listeReal) {
-				queryReal.setParameter("nomRea", r.getIdentite()); 
-				if(queryReal.getResultList().size() == 0) {		
+				if(RealisateurDAO.existeReal(r.getIdentite(), em) == null) {		
 					real.setIdentite(r.getIdentite());
 					real.setUrl(r.getUrl());
-					em.persist(real);
+					RealisateurDAO.ajoutReal(real, em);
 				}else {
-					real = queryReal.getResultList().get(0);
+					real = RealisateurDAO.existeReal(r.getIdentite(), em);
 				}
 				film.getRealisateurs().add(real);
 			}
@@ -136,15 +136,14 @@ public class Connexionjpa {
 					
 					if(a.getNaissance().getLieuNaissance() != "") {
 						String[] tabString = a.getNaissance().getLieuNaissance().split(", ");
-						queryPays.setParameter("nomPays", tabString[tabString.length-1]); 
 						
 						switch (tabString.length) {
 						case 1 :
-							if(queryPays.getResultList().size() == 0) {
+							if(PaysDAO.existePays(tabString[tabString.length-1], em) == null) {
 								pays.setNom(tabString[tabString.length-1]);
-								em.persist(pays);
+								PaysDAO.ajoutPays(pays, em);
 							}else {
-								pays = queryPays.getResultList().get(0);
+								pays = PaysDAO.existePays(tabString[tabString.length-1], em);
 							}
 							pays.getLieux().add(lieu);
 						break;
@@ -152,11 +151,11 @@ public class Connexionjpa {
 						case 2 :
 							lieu.setVille(tabString[tabString.length-2]);
 							lieu.setEtatDept(null);
-							if(queryPays.getResultList().size() == 0) {
+							if(PaysDAO.existePays(tabString[tabString.length-1], em) == null) {
 								pays.setNom(tabString[tabString.length-1]);
-								em.persist(pays);
+								PaysDAO.ajoutPays(pays, em);
 							}else {
-								pays = queryPays.getResultList().get(0);
+								pays = PaysDAO.existePays(tabString[tabString.length-1], em);
 							}
 							pays.getLieux().add(lieu);
 						break;
@@ -164,20 +163,20 @@ public class Connexionjpa {
 						default :
 							lieu.setVille(tabString[tabString.length-3]);
 							lieu.setEtatDept(tabString[tabString.length-2]);
-							if(queryPays.getResultList().size() == 0) {
+							if(PaysDAO.existePays(tabString[tabString.length-1], em) == null) {
 								pays.setNom(tabString[tabString.length-1]);
-								em.persist(pays);
+								PaysDAO.ajoutPays(pays, em);
 							}else {
-								pays = queryPays.getResultList().get(0);
+								pays = PaysDAO.existePays(tabString[tabString.length-1], em);
 							}
 							pays.getLieux().add(lieu);
 						break;
 					}
-					em.persist(lieu);		
+					LieuDAO.ajoutLieu(lieu, em);		
 					acteur.setNaissance(lieu);		
 					film.getActeurs().add(acteur);
 					
-					em.persist(acteur);	
+					ActeurDAO.ajoutActeur(acteur, em);
 							
 					}
 				}
@@ -191,7 +190,7 @@ public class Connexionjpa {
 				Acteurs acteur = new Acteurs();
 				Role role = new Role();					
 				role.setNom(r.getNom());
-				em.persist(role);
+				RoleDAO.ajoutRole(role, em);
 				
 				film.getRoles().add(role);						
 				if(em.find(Acteurs.class, r.getActeur().getId()) != null) {
@@ -205,15 +204,15 @@ public class Connexionjpa {
 						acteur.setDateNaissance(r.getActeur().getNaissance().getDateNaissance());					
 						if(r.getActeur().getNaissance().getLieuNaissance() != "") {
 							String[] tabString = r.getActeur().getNaissance().getLieuNaissance().split(", ");
-							queryPays.setParameter("nomPays", tabString[tabString.length-1]); 
+							
 							
 							switch (tabString.length) {
 							case 1 :
-								if(queryPays.getResultList().size() == 0) {
+								if(PaysDAO.existePays(tabString[tabString.length-1], em) == null) {
 									pays.setNom(tabString[tabString.length-1]);
-									em.persist(pays);
+									PaysDAO.ajoutPays(pays, em);
 								}else {
-									pays = queryPays.getResultList().get(0);
+									pays = PaysDAO.existePays(tabString[tabString.length-1], em);
 								}
 								pays.getLieux().add(lieu);
 							break;
@@ -221,11 +220,11 @@ public class Connexionjpa {
 							case 2 :
 								lieu.setVille(tabString[tabString.length-2]);
 								lieu.setEtatDept(null);
-								if(queryPays.getResultList().size() == 0) {
+								if(PaysDAO.existePays(tabString[tabString.length-1], em) == null) {
 									pays.setNom(tabString[tabString.length-1]);
-									em.persist(pays);
+									PaysDAO.ajoutPays(pays, em);
 								}else {
-									pays = queryPays.getResultList().get(0);
+									pays = PaysDAO.existePays(tabString[tabString.length-1], em);
 								}
 								pays.getLieux().add(lieu);
 							break;
@@ -233,11 +232,11 @@ public class Connexionjpa {
 							default :
 								lieu.setVille(tabString[tabString.length-3]);
 								lieu.setEtatDept(tabString[tabString.length-2]);
-								if(queryPays.getResultList().size() == 0) {
+								if(PaysDAO.existePays(tabString[tabString.length-1], em) == null) {
 									pays.setNom(tabString[tabString.length-1]);
-									em.persist(pays);
+									PaysDAO.ajoutPays(pays, em);
 								}else {
-									pays = queryPays.getResultList().get(0);
+									pays = PaysDAO.existePays(tabString[tabString.length-1], em);
 								}
 								pays.getLieux().add(lieu);
 							break;
@@ -245,7 +244,7 @@ public class Connexionjpa {
 						pays.getLieux().add(lieu);
 					}
 				}
-				em.persist(acteur);
+				ActeurDAO.ajoutActeur(acteur, em);
 				
 			}
 			role.setActeur(acteur);	
